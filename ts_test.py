@@ -12,7 +12,7 @@ a2 = 8
 h = 6
 g = 9.81
 B1, B2 = 1, 1
-M1, M2 = 10, 1
+M1, M2 = 10, 10
 r1, r2 = 1, 1
 m = 1
 t_span = [0, 100]
@@ -22,6 +22,8 @@ t_eval = np.arange(t_span[0], t_span[1], 0.1)
 error_x_values = []
 error_y_values = []
 time_values = []
+M1_values = []
+M2_values = []
 #############################################
 #Zdefiniowanie regulatora PID jako klasy
 class PIDController:
@@ -63,6 +65,8 @@ def model(t, x):
     time_values.append(t)
     #print(error_x)
     #print(error_y)
+    M1_values.append(M1)
+    M2_values.append(M2)
 
     #Aktualizacja sygnału sterującego z regulatora PID
     control_signal_x = pid_x.update(error_x, 0.01)  # Zakładamy krok czasowy równy 1
@@ -73,9 +77,9 @@ def model(t, x):
     phi_2_dot = ((y_dot  + x_dot)**2  / r2 ** 2) * 360 / (2*np.pi)
 
     #Zdefiniowanie równań różniczkowych opisujących model manipulatora
-    x_ddot = control_signal_x + x_dot * (-B1 / (m * r1 ** 2) - B2 / (m * r2 ** 2)) + y_dot * (B1 / (m * r1 ** 2) - B2 / (m * r2 ** 2)) \
+    x_ddot = x_dot * (-B1 / (m * r1 ** 2) - B2 / (m * r2 ** 2)) + y_dot * (B1 / (m * r1 ** 2) - B2 / (m * r2 ** 2)) \
              - M1 / (m * r1) * (x + a) / (np.sqrt((x + a) ** 2 + y ** 2)) - M2 / (m * r2) * (x - a) / (np.sqrt((x + a) ** 2 + y ** 2))
-    y_ddot = control_signal_y + x_dot * (B1 / (m * r1 ** 2) - B2 / (m * r2 ** 2)) + y_dot * (-B1 / (m * r1 ** 2) - B2 / (m * r2 ** 2)) \
+    y_ddot = x_dot * (B1 / (m * r1 ** 2) - B2 / (m * r2 ** 2)) + y_dot * (-B1 / (m * r1 ** 2) - B2 / (m * r2 ** 2)) \
              - M1 / (m * r1) * y / (np.sqrt((x + a) ** 2 + y ** 2)) - M2 / (m * r2) * y / (np.sqrt((x - a) ** 2 + y ** 2)) - g
 
     return [x_dot, y_dot, x_ddot, y_ddot,phi_1_dot,phi_2_dot]
@@ -128,6 +132,22 @@ angle_axs[1].set_xlabel('Czas')
 angle_axs[1].set_ylabel('Kąt')
 angle_axs[1].grid(True)
 angle_axs[1].legend()
+plt.tight_layout()
+plt.show()
+#Wykresy momentów obrotowych
+fig, torque_axs = plt.subplots(2, figsize=(10, 6))
+torque_axs[0].plot(time_values, M1_values, label='Moment M1', color='blue')
+torque_axs[0].set_title('Moment M1')
+torque_axs[0].set_xlabel('Czas')
+torque_axs[0].set_ylabel('Wartość')
+torque_axs[0].grid(True)
+torque_axs[0].legend()
+torque_axs[1].plot(time_values, M2_values, label='Moment M1', color='red')
+torque_axs[1].set_title('Moment M2')
+torque_axs[1].set_xlabel('Czas')
+torque_axs[1].set_ylabel('Wartość')
+torque_axs[1].grid(True)
+torque_axs[1].legend()
 plt.tight_layout()
 plt.show()
 #Wykresy uchybów w osiach x i y
